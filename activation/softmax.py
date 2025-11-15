@@ -17,15 +17,17 @@ def softmax(x: Tensor) -> Tensor:
 
     if x.requires_grad:
         def grad_fn(grad: np.ndarray):
-            # Softmax gradient calculation (Jacobian of softmax)
-            s = softmax_result.data
-            # Gradient of softmax, dL/dx = s * (1 - s) for each element
-            jacobian = s * (1 - s)
-            return grad * jacobian
+            s = softmax_result.data.reshape(-1, 1)  # column vector
+            # Jacobian of softmax: diag(s) - s*sᵀ
+            jac = np.diagflat(s) - s @ s.T
+            return jac @ grad.reshape(-1, 1)
 
         depends_on = [Dependency(x, grad_fn)]
     else:
         depends_on = []
 
-
-    return Tensor(data=softmax_result.data, requires_grad=x.requires_grad, depends_on=depends_on)
+    return Tensor(
+        data=softmax_result.data,
+        requires_grad=x.requires_grad,
+        depends_on=depends_on
+    )
