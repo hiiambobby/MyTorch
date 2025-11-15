@@ -18,25 +18,19 @@ class Linear(Layer):
 
     def forward(self, x: Tensor) -> Tensor:
         "TODO: implement forward pass"
-        y = x @ self.weight
-        if self.need_bias:
-            y += self.bias
-        return y
-
+        return (x @ self.weight) + self.bias if self.need_bias == True else x @ self.weight
 
     def initialize(self):
         "TODO: initialize weight by initializer function (mode)"
-        w_data = initializer(shape=(self.inputs, self.outputs), mode=self.initialize_mode)
         self.weight = Tensor(
-            data=w_data,
+            data=initializer((self.inputs , self.outputs), self.initialize_mode),
             requires_grad=True
         )
 
         "TODO: initialize bias by initializer function (zero mode)"
         if self.need_bias:
-            b_data = initializer(shape=(1, self.outputs), mode="zero") 
             self.bias = Tensor(
-                data=b_data,
+                data=initializer((1,self.outputs),mode="zero"),
                 requires_grad=True
             )
 
@@ -52,12 +46,10 @@ class Linear(Layer):
 
     def parameters(self):
         "TODO: return weights and bias"
-        params = [self.weight]
         if self.need_bias:
-            params.append(self.bias)
-        return params
-        
+            return [self.weight, self.bias]
+        return [self.weight]
 
     def __str__(self) -> str:
         return "linear - total param: {} - in: {}, out: {}".format(self.inputs * self.outputs, self.inputs,
-                                                                   self.outputs)
+                                                                   self.outputs)    
